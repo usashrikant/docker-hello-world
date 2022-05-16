@@ -1,59 +1,93 @@
-node {
-    // reference to maven
-    // ** NOTE: This 'maven-3.6.1' Maven tool must be configured in the Jenkins Global Configuration.   
-    def mvnHome = tool 'maven-3.8.5'
-
-    // holds reference to docker image
-    def dockerImage
-    // ip address of the docker private repository(nexus)
-    
-    def dockerRepoUrl = "localhost:8083"
-    def dockerImageName = "hello-world-java"
-    def dockerImageTag = "${dockerRepoUrl}/${dockerImageName}:${env.BUILD_NUMBER}"
-    
-    stage('Clone Repo') { // for display purposes
-      // Get some code from a GitHub repository
-      git 'https://github.com/dstar55/docker-hello-world-spring-boot.git'
-      // Get the Maven tool.
-      // ** NOTE: This 'maven-3.6.1' Maven tool must be configured
-      // **       in the global configuration.           
-      mvnHome = tool 'maven-3.8.5'
-    }    
-  
-    stage('Build Project') {
-      // build project via maven
-      sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
-    }
+pipeline {
+    agent any
+	tools {
+		maven 'Maven'
+	}
 	
-	stage('Publish Tests Results'){
-      parallel(
-        publishJunitTestsResultsToJenkins: {
-          echo "Publish junit Tests Results"
-		  junit '**/target/surefire-reports/TEST-*.xml'
-		  archive 'target/*.jar'
-        },
-        publishJunitTestsResultsToSonar: {
-          echo "This is branch b"
-      })
-    }
-		
-    stage('Build Docker Image') {
-      // build docker image
-      sh "whoami"
-      sh "ls -all /var/run/docker.sock"
-      sh "mv ./target/hello*.jar ./data" 
-      
-      dockerImage = docker.build("hello-world-java")
-    }
-   
-    stage('Deploy Docker Image'){
-      
-      // deploy docker image to nexus
-
-      echo "Docker Image Tag Name: ${dockerImageTag}"
-
-      sh "docker login -u admin -p admin123 ${dockerRepoUrl}"
-      sh "docker tag ${dockerImageName} ${dockerImageTag}"
-      sh "docker push ${dockerImageTag}"
+	environment {
+		PROJECT_ID = 'possible-sun-342923'
+                CLUSTER_NAME = 'my-first-cluster-1'
+                LOCATION = 'us-central1-c'
+                CREDENTIALS_ID = 'kubernetes'		
+	}
+	
+    stages {
+	    stage('Scm Checkout') {
+		    steps {
+			    checkout scm
+		    }
+	    }
+	    
+	    stage('Build') {
+		    steps {
+					echo "Build"
+			    // sh 'mvn clean package'
+		    }
+	    }
+	    
+	    stage('Test') {
+		    steps {
+			    echo "Testing..."
+			    // sh 'mvn test'
+		    }
+	    }
+	    
+	    stage('Build Docker Image') {
+		    steps {
+			    echo 'whoami'
+			     script {
+				     myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
+			     }
+		    }
+	    }
+	    
+	    stage("Push Docker Image") {
+		    steps {
+					echo "Docker"
+			     script {
+				     echo "Push Docker Image"
+				     withCredentials([string(credentialsId: 'raghukom', variable: 'raghukom')]) {
+             				sh "docker login -u raghukom -p ${raghukom}"
+				     }
+				         myimage.push("${env.BUILD_ID}")
+				    
+			     }
+		    }
+	    }
+	    
+	    stage('Deploy to K8s Dev') {
+		    steps{
+			    echo "Deployment started ..."
+			     sh 'ls -ltr'
+			     sh 'pwd'
+			     sh "sed -i 's/tagversion/${env.BUILD_ID}/g' serviceLB.yaml"
+			    echo '${env.BRANCH_NAME}'
+			        echo '${env.CHANGE_ID}'
+			sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
+			     //echo "Start deployment of serviceLB.yaml"
+			    //step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'serviceLB.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+				 echo "Start deployment of deployment.yaml"
+				 step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+			    echo "Deployment Finished ..."
+		    }
+	    }
+	    
+	       stage('Deploy to K8s Test') {
+		    steps{
+			    echo "Deployment started ..."
+			     sh 'ls -ltr'
+			     sh 'pwd'
+			     sh "sed -i 's/tagversion/${env.BUILD_ID}/g' serviceLB.yaml"
+			     sh "sed -i 's/myapp/test/g' serviceLB.yaml"
+			    echo '${env.BRANCH_NAME}'
+			        echo '${env.CHANGE_ID}'
+			sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
+			     //echo "Start deployment of serviceLB.yaml"
+			    //step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'serviceLB.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+				 echo "Start deployment of deployment.yaml"
+				 step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+			    echo "Deployment Finished ..."
+		    }
+	    }
     }
 }
