@@ -30,18 +30,18 @@ pipeline {
 	    stage('Build Docker Image') {
 		    steps {
 			    echo 'whoami'
-			     script {
+			     //script {
 				     //myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
 				     
 				     sh 'docker build -t raghukom/devops:latest .'
-			     }
+			     //}
 		    }
 	    }
 	    
 	    stage("Push Docker Image") {
 		    steps {
 					echo "Docker"
-			     script {
+			     //script {
 				     echo "Push Docker Image"
 				     //withCredentials([string(credentialsId: 'raghukom', variable: 'dockerpwd')]) {
              				//sh "docker login -u raghukom -p $dockerpwd"
@@ -50,7 +50,7 @@ pipeline {
 				     sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
 				     sh 'docker push raghukom/devops:latest'
 				    
-			     }
+			     //}
 		    }
 	    }
 	    
