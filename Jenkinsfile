@@ -42,7 +42,7 @@ pipeline {
 			     script {
 				     echo "Push Docker Image"
 				     withCredentials([string(credentialsId: 'raghukom', variable: 'raghukom')]) {
-             				sh "docker login -u raghukom -p $DOCKERCREDS_PSW"
+             				sh "docker login -u raghukom -p %DOCKERCREDS%"
 				     }
 				         myimage.push("${env.BUILD_ID}")
 				    
