@@ -8,7 +8,8 @@ pipeline {
 		PROJECT_ID = 'possible-sun-342923'
                 CLUSTER_NAME = 'my-first-cluster-1'
                 LOCATION = 'us-central1-c'
-                CREDENTIALS_ID = 'kubernetes'		
+                CREDENTIALS_ID = 'kubernetes'
+      		DOCKERCREDS = credentials('raghukom')
 	}
 	
     stages {
@@ -41,7 +42,7 @@ pipeline {
 			     script {
 				     echo "Push Docker Image"
 				     withCredentials([string(credentialsId: 'raghukom', variable: 'raghukom')]) {
-             				sh "docker login -u raghukom -p $raghukom"
+             				sh "docker login -u raghukom -p $DOCKERCREDS_PWD"
 				     }
 				         myimage.push("${env.BUILD_ID}")
 				    
