@@ -41,15 +41,16 @@ pipeline {
 	    stage("Push Docker Image") {
 		    steps {
 				 //sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
+			          sh "docker login -u raghukom -p Raghu@1507"
 				 //sh 'docker push raghukom/devops:latest'
-			     script {
+			     //script {
 				     echo "Push Docker Image"
-				     withCredentials([usernamePassword(credentialsId: 'raghukom', passwordVariable: 'dockerpwd')]) {
-             				sh 'docker login -u raghukom -p $dockerpwd'
-					sh 'echo $dockerpwd | base64'
-				     }
-				     myimage.push("${env.BUILD_ID}")			    
-			     }
+				     //withCredentials([usernamePassword(credentialsId: 'raghukom', passwordVariable: 'dockerpwd')]) {
+             				//sh 'docker login -u raghukom -p $dockerpwd'
+					//sh 'echo $dockerpwd | base64'
+				     //}
+				     //myimage.push("${env.BUILD_ID}")			    
+			     //}
 		    }
 	    }
 	    
