@@ -30,11 +30,11 @@ pipeline {
 	    stage('Build Docker Image') {
 		    steps {
 			    echo 'whoami'
-			     //script {
-				     //myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
+			     script {
+				     myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
 				     
-				     sh 'docker build -t raghukom/devops:latest .'
-			     //}
+				     //sh 'docker build -t raghukom/devops:latest .'
+			     }
 		    }
 	    }
 	    
