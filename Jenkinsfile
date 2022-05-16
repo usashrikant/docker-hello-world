@@ -40,17 +40,15 @@ pipeline {
 	    
 	    stage("Push Docker Image") {
 		    steps {
-					echo "Docker"
-			     //script {
+				 //sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
+				 //sh 'docker push raghukom/devops:latest'
+			     script {
 				     echo "Push Docker Image"
-				     //withCredentials([string(credentialsId: 'raghukom', variable: 'dockerpwd')]) {
-             				//sh "docker login -u raghukom -p $dockerpwd"
-				     //}
-				     //myimage.push("${env.BUILD_ID}")
-				     sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
-				     sh 'docker push raghukom/devops:latest'
-				    
-			     //}
+				     withCredentials([string(credentialsId: 'raghukom', variable: 'dockerpwd')]) {
+             				sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
+				     }
+				     myimage.push("${env.BUILD_ID}")			    
+			     }
 		    }
 	    }
 	    
