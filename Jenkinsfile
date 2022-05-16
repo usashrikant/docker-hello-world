@@ -13,11 +13,11 @@ pipeline {
 	}
 	
     stages {
-	    stage('Scm Checkout') {
-		    steps {
-			    checkout scm
-		    }
-	    }
+	   // stage('Scm Checkout') {
+		    //steps {
+			    //checkout scm
+		    //}
+	    //}
 	    
 	    
 	    stage('Test') {
@@ -31,7 +31,9 @@ pipeline {
 		    steps {
 			    echo 'whoami'
 			     script {
-				     myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
+				     //myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
+				     
+				     sh 'docker build -t raghukom/devops:latest .'
 			     }
 		    }
 	    }
@@ -41,10 +43,12 @@ pipeline {
 					echo "Docker"
 			     script {
 				     echo "Push Docker Image"
-				     withCredentials([string(credentialsId: 'raghukom', variable: 'dockerpwd')]) {
-             				sh "docker login -u raghukom -p $dockerpwd"
-				     }
-				         myimage.push("${env.BUILD_ID}")
+				     //withCredentials([string(credentialsId: 'raghukom', variable: 'dockerpwd')]) {
+             				//sh "docker login -u raghukom -p $dockerpwd"
+				     //}
+				     //myimage.push("${env.BUILD_ID}")
+				     sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
+				     sh 'docker push raghukom/devops:latest'
 				    
 			     }
 		    }
@@ -85,5 +89,11 @@ pipeline {
 			    echo "Deployment Finished ..."
 		    }
 	    }
+	    
+	    post {
+		always {
+			sh 'docker logout'
+		}
+	}
     }
 }
