@@ -1,8 +1,8 @@
 pipeline {
     agent any
-	tools {
-		maven 'Maven'
-	}
+	//tools {
+		//maven 'Maven'
+	//}
 	
 	environment {
 		PROJECT_ID = 'possible-sun-342923'
@@ -13,11 +13,11 @@ pipeline {
 	}
 	
     stages {
-	   // stage('Scm Checkout') {
-		    //steps {
-			    //checkout scm
-		    //}
-	    //}
+	    stage('Scm Checkout') {
+		  steps {
+			    checkout scm
+		    }
+	    }
 	    
 	    
 	    stage('Test') {
