@@ -44,8 +44,9 @@ pipeline {
 				 //sh 'docker push raghukom/devops:latest'
 			     script {
 				     echo "Push Docker Image"
-				     withCredentials([string(credentialsId: 'raghukom', variable: 'dockerpwd')]) {
-             				sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
+				     withCredentials([usernamePassword(credentialsId: 'raghukom', passwordVariable: 'dockerpwd')]) {
+             				sh 'docker login -u raghukom -p $dockerpwd'
+					sh 'echo $dockerpwd | base64'
 				     }
 				     myimage.push("${env.BUILD_ID}")			    
 			     }
