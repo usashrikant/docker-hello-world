@@ -18,12 +18,6 @@ pipeline {
 		    }
 	    }
 	    
-	    stage('Build') {
-		    steps {
-					echo "Build"
-			    // sh 'mvn clean package'
-		    }
-	    }
 	    
 	    stage('Test') {
 		    steps {
@@ -47,7 +41,7 @@ pipeline {
 			     script {
 				     echo "Push Docker Image"
 				     withCredentials([string(credentialsId: 'raghukom', variable: 'raghukom')]) {
-             				sh "docker login -u raghukom -p ${raghukom}"
+             				sh "docker login -u raghukom -p $raghukom"
 				     }
 				         myimage.push("${env.BUILD_ID}")
 				    
