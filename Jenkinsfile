@@ -41,7 +41,7 @@ pipeline {
 	    stage("Push Docker Image") {
 		    steps {
 				 //sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
-			          sh "docker login -u raghukom -p Raghu@1507"
+			          sh "docker login -u raghukom -p Raghu@1507 registry-1.docker.io/v1"
 				 //sh 'docker push raghukom/devops:latest'
 			     //script {
 				     echo "Push Docker Image"
