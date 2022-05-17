@@ -1,38 +1,28 @@
 pipeline {
     agent any
-	//tools {
-		//maven 'Maven'
-	//}
 	
 	environment {
 		PROJECT_ID = 'possible-sun-342923'
-                CLUSTER_NAME = 'cluster-1'
-                LOCATION = 'us-central1-c'
-                CREDENTIALS_ID = 'kubernetes'
+    CLUSTER_NAME = 'cluster-1'
+    LOCATION = 'us-central1-c'
+    CREDENTIALS_ID = 'kubernetes'
+    EMAIL_TO = 'bermcis6@gmail.com'
 	}
 	
-    stages {
-	    //stage('Scm Checkout') {
-		  //steps {
-			  //  checkout scm
-		   // }
-	   // }
-	    
+    stages {	    
 	    
 	    stage('Test') {
 		    steps {
-			    echo "Testing..."
-			    // sh 'mvn test'
+			    sh 'mvn test'
 		    }
 	    }
 	    
 	    stage('Build Docker Image') {
 		    steps {
-			    echo 'whoami'
 			     script {
 				     myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
 				     
-				     //sh 'docker build -t raghukom/devops:latest .'
+				     sh 'docker build -t raghukom/devops:latest .'
 			     }
 		    }
 	    }
@@ -40,20 +30,13 @@ pipeline {
 	    stage("Push Docker Image") {
 		    steps {
 				 //sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
-			         // sh "docker login -u raghukom -p Raghu@1507 registry-1.docker.io/v1"
 				 //sh 'docker push raghukom/devops:latest'
 			     script {
 				     echo "Push Docker Image"
 				     withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                                        sh 'docker login -u $USERNAME -p $PASSWORD'
 
-                                     }
-				     //withCredentials([string(credentialsId: 'dockerhub', variable: 'docker')]) {
-					     //echo "Entered"
-             				//sh 'docker login -u raghukom -p $docker'
-					    // echo "out"
-					//sh 'echo $dockerpwd | base64'
-				    // }
+                            }
 				    myimage.push("${env.BUILD_ID}")			    
 			     }
 		    }
@@ -62,39 +45,59 @@ pipeline {
 	    stage('Deploy to K8s Dev') {
 		    steps{
 			    echo "Deployment started ..."
-			     //sh 'ls -ltr'
-			     //sh 'pwd'
+
 			     sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
 			     sh "sed -i 's/amerisourcebergenapp/amerisourcebergenapp-dev/g' deployment.yaml"
 
-			    //sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
-			     //echo "Start deployment of serviceLB.yaml"
-			    sh 'cat deployment.yaml'
-			    //step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'serviceLB.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
-				 echo "Start deployment of deployment.yaml"
-				 step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+			    // sh 'cat deployment.yaml'
+				  echo "Start deployment of deployment.yaml"
+				  step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
 			    echo "Deployment Finished ..."
 		    }
 	    }
 	    
-	       stage('Deploy to K8s Test') {
-		    steps{
-			    echo "Deployment started ..."
-			    // sh 'ls -ltr'
-			     //sh 'pwd'
-			     sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
-			     sh "sed -i 's/amerisourcebergenapp/amerisourcebergenapp-test/g' deployment.yaml"
-			    echo '${BRANCH_NAME}'
-			        echo "${env.CHANGE_ID}"
-			
-			     //echo "Start deployment of serviceLB.yaml"
-			    //step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'serviceLB.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
-				 echo "Start deployment of deployment.yaml"
-				 step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
-			    echo "Deployment Finished ..."
-		    }
+	    stage('Deploy to K8s Test') {
+          steps{
+            echo "Deployment started ..."
+            sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
+            sh "sed -i 's/amerisourcebergenapp/amerisourcebergenapp-test/g' deployment.yaml"
+        
+          echo "Start deployment of deployment.yaml"
+          step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+            echo "Deployment Finished ..."
+          }
 	    }
-	    
 
+      stage('Deploy to K8s Prod') {
+          steps{
+
+            script {
+              timeout(time: 10, unit: 'MINUTES') {
+                input(id: "Deploy Gate", message: "Deploy ${params.project_name} to Prod?", ok: 'Deploy')
+              }
+            }
+            echo "Deployment started ..."
+            sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
+        
+            echo "Start deployment of deployment.yaml"
+            step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+              echo "Deployment Finished ..."
+            }
+	    }
+	    
+    }
+
+    post {
+        failure {
+            emailext body: 'Check console output at $BUILD_URL to view the results. \n\n ${CHANGES} \n\n -------------------------------------------------- \n${BUILD_LOG, maxLines=100, escapeHtml=false}', 
+                    to: "${EMAIL_TO}", 
+                    subject: 'Build failed in Jenkins: $PROJECT_NAME - #$BUILD_NUMBER'
+        }
+        always {
+            
+        }
+        success {
+
+        }
     }
 }
