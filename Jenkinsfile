@@ -94,10 +94,10 @@ pipeline {
                     subject: 'Build failed in Jenkins: $PROJECT_NAME - #$BUILD_NUMBER'
         }
         always {
-            
+            echo 'always'
         }
         success {
-
+            echo 'success'
         }
     }
 }
