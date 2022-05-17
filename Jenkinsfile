@@ -43,14 +43,14 @@ pipeline {
 				 //sh 'echo $DOCKERCREDS_PSW | docker login -u $DOCKERCREDS_USR --password-stdin'
 			         // sh "docker login -u raghukom -p Raghu@1507 registry-1.docker.io/v1"
 				 //sh 'docker push raghukom/devops:latest'
-			     //script {
+			     script {
 				     echo "Push Docker Image"
 				     withCredentials([string(credentialsId: 'raghukom', variable: 'raghukom')]) {
              				sh 'docker login -u raghukom -p $raghukom'
 					//sh 'echo $dockerpwd | base64'
 				     }
 				    myimage.push("${env.BUILD_ID}")			    
-			     //}
+			     }
 		    }
 	    }
 	    
