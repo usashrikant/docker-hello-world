@@ -13,11 +13,11 @@ pipeline {
 	}
 	
     stages {
-	    stage('Scm Checkout') {
-		  steps {
-			    checkout scm
-		    }
-	    }
+	    //stage('Scm Checkout') {
+		  //steps {
+			  //  checkout scm
+		   // }
+	   // }
 	    
 	    
 	    stage('Test') {
@@ -46,7 +46,9 @@ pipeline {
 			     script {
 				     echo "Push Docker Image"
 				     withCredentials([string(credentialsId: 'dockerhub', variable: 'docker')]) {
+					     echo "Entered"
              				sh 'docker login -u raghukom -p $docker'
+					     echo "out"
 					//sh 'echo $dockerpwd | base64'
 				     }
 				    myimage.push("${env.BUILD_ID}")			    
