@@ -9,7 +9,7 @@ pipeline {
                 CLUSTER_NAME = 'my-first-cluster-1'
                 LOCATION = 'us-central1-c'
                 CREDENTIALS_ID = 'kubernetes'
-      		DOCKERCREDS = credentials('raghukom')
+      		DOCKERCREDS = credentials('dockerhub')
 	}
 	
     stages {
