@@ -6,10 +6,9 @@ pipeline {
 	
 	environment {
 		PROJECT_ID = 'possible-sun-342923'
-                CLUSTER_NAME = 'my-first-cluster-1'
+                CLUSTER_NAME = 'cluster-1'
                 LOCATION = 'us-central1-c'
                 CREDENTIALS_ID = 'kubernetes'
-      		DOCKERCREDS = credentials('dockerhub')
 	}
 	
     stages {
@@ -67,8 +66,7 @@ pipeline {
 			     sh 'pwd'
 			     sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
 			     sh "sed -i 's/amerisourcebergenapp/amerisourcebergenapp-dev/g' deployment.yaml"
-			    echo '${env.BRANCH_NAME}'
-			        echo '${env.CHANGE_ID}'
+
 			sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
 			     //echo "Start deployment of serviceLB.yaml"
 			    //step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'serviceLB.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
@@ -85,8 +83,8 @@ pipeline {
 			     sh 'pwd'
 			     sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
 			     sh "sed -i 's/amerisourcebergenapp/amerisourcebergenapp-test/g' deployment.yaml"
-			    echo '${env.BRANCH_NAME}'
-			        echo '${env.CHANGE_ID}'
+			    echo '${BRANCH_NAME}'
+			        echo "${env.CHANGE_ID}"
 			
 			     //echo "Start deployment of serviceLB.yaml"
 			    //step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'serviceLB.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
