@@ -60,6 +60,7 @@ pipeline {
 	    stage('Deploy to K8s Test') {
           steps{
             echo "Deployment started ..."
+                        echo '${branch}'
             sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
             sh "sed -i 's/amerisourcebergenapp-dev/amerisourcebergenapp-test/g' deployment.yaml"
         
@@ -70,11 +71,11 @@ pipeline {
 	    }
 
       stage('Deploy to K8s Prod') {
-        echo '${branch}'
          when {
             branch 'origin/develop'
         }
           steps{
+
 
             script {
               timeout(time: 10, unit: 'MINUTES') {
