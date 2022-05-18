@@ -18,12 +18,18 @@ pipeline {
 		    }
 	    }
 	    
+	    stage('Sonar Qube Analysis') {
+		    steps {
+			    echo 'Sonar'
+		    }
+	    }
+	    
 	    stage('Build Docker Image') {
 		    steps {
 			     script {
 				     myimage = docker.build("raghukom/devops:${env.BUILD_ID}")
 				     
-				     sh 'docker build -t raghukom/devops:latest .'
+				     //sh 'docker build -t raghukom/devops:latest .'
 			     }
 		    }
 	    }
