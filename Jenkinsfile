@@ -60,7 +60,7 @@ pipeline {
           steps{
             echo "Deployment started ..."
             sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
-            sh "sed -i 's/amerisourcebergenapp/amerisourcebergenapp-test/g' deployment.yaml"
+            sh "sed -i 's/amerisourcebergenapp-dev/amerisourcebergenapp-test/g' deployment.yaml"
         
           echo "Start deployment of deployment.yaml"
           step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
@@ -69,15 +69,19 @@ pipeline {
 	    }
 
       stage('Deploy to K8s Prod') {
+         when {
+            branch 'master'
+        }
           steps{
 
             script {
               timeout(time: 10, unit: 'MINUTES') {
-                input(id: "Deploy Gate", message: "Deploy ${params.project_name} to Prod?", ok: 'Deploy')
+                input(id: "Deploy Gate", message: "Deploy to Prod?", ok: 'Deploy')
               }
             }
             echo "Deployment started ..."
             sh "sed -i 's/tagversion/${env.BUILD_ID}/g' deployment.yaml"
+            sh "sed -i 's/amerisourcebergenapp-test/amerisourcebergenapp/g' deployment.yaml"
         
             echo "Start deployment of deployment.yaml"
             step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
