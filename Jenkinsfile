@@ -71,7 +71,7 @@ pipeline {
 
       stage('Deploy to K8s Prod') {
          when {
-            branch 'master'
+            branch 'develop'
         }
           steps{
 
