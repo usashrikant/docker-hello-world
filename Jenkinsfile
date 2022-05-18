@@ -70,8 +70,9 @@ pipeline {
 	    }
 
       stage('Deploy to K8s Prod') {
+        echo '${branch}'
          when {
-            branch 'develop'
+            branch 'origin/develop'
         }
           steps{
 
