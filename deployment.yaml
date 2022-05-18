@@ -2,22 +2,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: amerisourcebergenapp
+ name: fedexapp
  labels:
-  app: amerisourcebergenapp
+  app: fedexapp
 spec:
  replicas: 1
  selector:
   matchLabels:
-   app: amerisourcebergenapp
+   app: fedexapp
  template:
   metadata: 
    labels:
-    app: amerisourcebergenapp
+    app: fedexapp
   spec:
    containers:
-   - name: amerisourcebergenapp
-     image: raghukom/devops:tagversion
+   - name: fedexapp
+     image: shrikant7t/devops:tagversion
      ports:
      - containerPort: 8080
 
@@ -25,11 +25,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: amerisourcebergenapp
+  name: fedexapp
 spec:
   type: LoadBalancer
   selector:
-    app: amerisourcebergenapp
+    app: fedexapp
   ports:
     - protocol: TCP
       port: 80
